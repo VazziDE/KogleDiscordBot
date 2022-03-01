@@ -85,12 +85,16 @@ def getUserLevel(userID):
 async def on_message(message):
     channel = message.channel
     if isinstance(channel, discord.TextChannel):
-        lowed = str.lower(message.content)
         author = message.author
-        giveUserLevel(author.id)
-        if lowed.startswith(PREFIX):
-            if lowed == PREFIX + "level":
-                await channel.send("Your level is " + str(getUserLevel(author.id)))
+        useCommand = False
+        for checkcmd in botcommands:
+            if message.content.startswith(PREFIX + checkcmd) is True:
+                useCommand = True
+                break
+        if useCommand is False:
+            giveUserLevel(author.id)
+    await bot.process_commands(message)
+
 
 @bot.command()
 async def level(ctx):
