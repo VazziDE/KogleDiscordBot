@@ -92,5 +92,20 @@ async def on_message(message):
             if lowed == PREFIX + "level":
                 await channel.send("Your level is " + str(getUserLevel(author.id)))
 
+@bot.command()
+async def level(ctx):
+    author = ctx.author
+    await ctx.send("Your level is " + str(getUserLevel(author.id)))
+
+
+@bot.command()
+async def leveluser(ctx, *, member: discord.Member):
+    await ctx.send(member.display_name + "'s level is " + str(getUserLevel(member.id)))
+
+
+@leveluser.error
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Missing Argument [1]: &=leveluser @User")
 
 bot.run(TOKEN)
