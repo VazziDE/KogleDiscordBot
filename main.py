@@ -86,13 +86,14 @@ async def on_message(message):
     channel = message.channel
     if isinstance(channel, discord.TextChannel):
         author = message.author
-        useCommand = False
-        for checkcmd in botcommands:
-            if message.content.startswith(PREFIX + checkcmd) is True:
-                useCommand = True
-                break
-        if useCommand is False:
-            giveUserLevel(author.id)
+        if author.id != bot.user.id:
+            useCommand = False
+            for checkcmd in botcommands:
+                if message.content.startswith(PREFIX + checkcmd) is True:
+                    useCommand = True
+                    break
+            if useCommand is False:
+                giveUserLevel(author.id)
     await bot.process_commands(message)
 
 
@@ -111,5 +112,6 @@ async def leveluser(ctx, *, member: discord.Member):
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Missing Argument [1]: &=leveluser @User")
+
 
 bot.run(TOKEN)
