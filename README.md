@@ -7,3 +7,9 @@ you are welcome to make pull requests so that the bot can be programmed further.
 Any features you can think of can be implemented.<br>
 
 <h3>You have to note that if you want to use it you have to put your own token from your bot into the variable TOKEN.</h3>
+
+<strong>Prefix: &=</strong>
+
+<h3>Current Features:</h3>
+
+<strong>LevelSystem (&=level -> to see your current level)</strong>
