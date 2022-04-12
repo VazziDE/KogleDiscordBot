@@ -116,7 +116,6 @@ def updateCooldown(userID):
 
         with open("level.json", "w") as f:
             json.dump(data, f, indent=4)
-        print(datetime.datetime.strptime(str(enddate), "%Y%m%d%H%M%S"))
 
 
 def getUserCooldown(userID):
