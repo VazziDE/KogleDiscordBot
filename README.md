@@ -12,4 +12,7 @@ Any features you can think of can be implemented.<br>
 
 <h3>Current Features:</h3>
 
-<strong>LevelSystem (&=level -> to see your current level)</strong>
+<strong>LevelSystem (&=level -> to see your current level)</strong><br>
+<strong>CoinsSystem (&=coins -> to see your current coins total)</strong><br>
+
+Extra Feature: &=daily -> to claim your daily coins<br>
