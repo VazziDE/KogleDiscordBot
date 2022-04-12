@@ -1,6 +1,8 @@
 import json
+import datetime
 
 import discord
+from discord import Embed
 from discord.ext import commands
 
 TOKEN = ""
@@ -13,7 +15,7 @@ BANNER = b"\x20\x5F\x20\x20\x5F\x5F\x20\x5F\x5F\x5F\x5F\x20\x20\x5F\x5F\x5F\x5F\
 PREFIX = "&="
 bot = commands.Bot(command_prefix="&=")
 
-botcommands = ["level", "leveluser"]
+botcommands = ["level", "leveluser", "daily", "coins"]
 
 
 @bot.event
@@ -40,7 +42,7 @@ def createUserLevel(userID):
     with open("level.json") as json_file:
         data = json.load(json_file)
         tempdata = data["levels"]
-        y = {str(userID): True, 'level': 0}
+        y = {str(userID): True, 'level': 0, 'coins': 0, 'cooldown': 0}
         tempdata.append(y)
 
     with open("level.json", "w") as f:
@@ -50,21 +52,86 @@ def createUserLevel(userID):
 def giveUserLevel(userID):
     if existUser(userID) is False:
         createUserLevel(userID)
-        return
     oldLevel = getUserLevel(userID)
+    oldCoins = getUserCoins(userID)
+    cooldown = getUserCooldown(userID)
 
     with open("level.json") as json_file:
         data = json.load(json_file)
         tempdata = data["levels"]
-        oldData = {str(userID): True, 'level': oldLevel}
+        oldData = {str(userID): True, 'level': oldLevel, 'coins': oldCoins, 'cooldown': cooldown}
         tempdata.remove(oldData)
 
-    with open("level.json") as json_file:
-        newLevel = {str(userID): True, 'level': (oldLevel + 1)}
-        tempdata.append(newLevel)
+        with open("level.json") as json_file:
+            newLevel = {str(userID): True, 'level': (oldLevel + 1), 'coins': oldCoins, 'cooldown': cooldown}
+            tempdata.append(newLevel)
 
-    with open("level.json", "w") as f:
-        json.dump(data, f, indent=4)
+        with open("level.json", "w") as f:
+            json.dump(data, f, indent=4)
+
+
+def giveUserCoins(userID):
+    if existUser(userID) is False:
+        createUserLevel(userID)
+    if int(getUserCooldown(userID)) < int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")):
+        oldLevel = getUserLevel(userID)
+        oldCoins = getUserCoins(userID)
+        cooldown = getUserCooldown(userID)
+
+        with open("level.json") as json_file:
+            data = json.load(json_file)
+            tempdata = data["levels"]
+            oldData = {str(userID): True, 'level': oldLevel, 'coins': oldCoins, 'cooldown': cooldown}
+            tempdata.remove(oldData)
+
+            with open("level.json") as json_file:
+                newLevel = {str(userID): True, 'level': oldLevel, 'coins': (oldCoins + 10), 'cooldown': cooldown}
+                tempdata.append(newLevel)
+
+            with open("level.json", "w") as f:
+                json.dump(data, f, indent=4)
+        updateCooldown(userID)
+        return True
+    return False
+
+
+def updateCooldown(userID):
+    if existUser(userID) is False:
+        createUserLevel(userID)
+    oldLevel = getUserLevel(userID)
+    oldCoins = getUserCoins(userID)
+    cooldown = getUserCooldown(userID)
+    with open("level.json") as json_file:
+        data = json.load(json_file)
+        tempdata = data["levels"]
+        oldData = {str(userID): True, 'level': oldLevel, 'coins': oldCoins, 'cooldown': cooldown}
+        tempdata.remove(oldData)
+
+        nowtime = int(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+        enddate = nowtime + int(datetime.timedelta(days=1).total_seconds())
+        with open("level.json") as json_file:
+            newLevel = {str(userID): True, 'level': oldLevel, 'coins': oldCoins,
+                        'cooldown': enddate}
+            tempdata.append(newLevel)
+
+        with open("level.json", "w") as f:
+            json.dump(data, f, indent=4)
+        print(datetime.datetime.strptime(str(enddate), "%Y%m%d%H%M%S"))
+
+
+def getUserCooldown(userID):
+    oldCooldown = 0
+    with open("level.json") as json_file:
+        data = json.load(json_file)
+        tempdata = data["levels"]
+        for checking in tempdata:
+            if str(userID) in checking:
+                if "cooldown" in checking:
+                    oldCooldown = checking["cooldown"]
+                    tempdata.remove(checking)
+                    break
+
+    return oldCooldown
 
 
 def getUserLevel(userID):
@@ -79,6 +146,20 @@ def getUserLevel(userID):
                 break
 
     return oldLevel
+
+
+def getUserCoins(userID):
+    oldCoins = 0
+    with open("level.json") as json_file:
+        data = json.load(json_file)
+        tempdata = data["levels"]
+        for checking in tempdata:
+            if str(userID) in checking:
+                oldCoins = checking["coins"]
+                tempdata.remove(checking)
+                break
+
+    return oldCoins
 
 
 @bot.event
@@ -106,6 +187,43 @@ async def level(ctx):
 @bot.command()
 async def leveluser(ctx, *, member: discord.Member):
     await ctx.send(member.display_name + "'s level is " + str(getUserLevel(member.id)))
+
+
+@bot.command()
+async def daily(ctx):
+    channel = ctx.channel
+    if isinstance(channel, discord.TextChannel):
+        author = ctx.author
+        if giveUserCoins(author.id) is True:
+            claimembed = Embed(
+                title="Dailyreward Claimed",
+                url="",
+                description="You have claimed your dailyreward of 10 coins.",
+                color=0x06a135
+            )
+            await ctx.send(embed=claimembed)
+        else:
+            claimembed = Embed(
+                title="Dailyreward Cooldown",
+                url="",
+                description="You are still in a cooldown.",
+                color=discord.Colour.from_rgb(211, 84, 0)
+            )
+            await ctx.send(embed=claimembed)
+
+
+@bot.command()
+async def coins(ctx):
+    channel = ctx.channel
+    if isinstance(channel, discord.TextChannel):
+        author = ctx.author
+        coinsembed = Embed(
+            title="Your Coins",
+            url="",
+            description="You have " + str(getUserCoins(author.id)) + " coins.",
+            color=10417
+        )
+        await ctx.send(embed=coinsembed)
 
 
 @leveluser.error
