@@ -1,5 +1,6 @@
 import json
 import datetime
+import requests
 
 import discord
 from discord import Embed
@@ -15,7 +16,7 @@ BANNER = b"\x20\x5F\x20\x20\x5F\x5F\x20\x5F\x5F\x5F\x5F\x20\x20\x5F\x5F\x5F\x5F\
 PREFIX = "&="
 bot = commands.Bot(command_prefix="&=")
 
-botcommands = ["level", "leveluser", "daily", "coins"]
+botcommands = ["level", "leveluser", "daily", "coins", "joke"]
 
 
 @bot.event
@@ -223,6 +224,28 @@ async def coins(ctx):
             color=10417
         )
         await ctx.send(embed=coinsembed)
+
+@bot.command()
+async def joke(ctx):
+    x = requests.get('https://v2.jokeapi.dev/joke/Any')
+    if x.status_code == 200:
+
+        if "joke" in x.json():
+            jokeembed = Embed(
+                title="Random Joke",
+                url="",
+                description="**Joke:** " + x.json()["joke"],
+                color=discord.Colour.from_rgb(103, 230, 39)
+            )
+            await ctx.send(embed=jokeembed)
+        if "setup" in x.json():
+            jokeembed = Embed(
+                title="Random Joke",
+                url="",
+                description="**Setup:** " + x.json()["setup"] + " **Solution:** " + x.json()["delivery"],
+                color=discord.Colour.from_rgb(103, 230, 39)
+            )
+            await ctx.send(embed=jokeembed)
 
 
 @leveluser.error
