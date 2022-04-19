@@ -16,7 +16,7 @@ BANNER = b"\x20\x5F\x20\x20\x5F\x5F\x20\x5F\x5F\x5F\x5F\x20\x20\x5F\x5F\x5F\x5F\
 PREFIX = "&="
 bot = commands.Bot(command_prefix="&=")
 
-botcommands = ["level", "leveluser", "daily", "coins", "joke"]
+botcommands = ["level", "leveluser", "daily", "coins", "joke", "food", "number"]
 
 
 @bot.event
@@ -197,7 +197,6 @@ async def daily(ctx):
         if giveUserCoins(author.id) is True:
             claimembed = Embed(
                 title="Dailyreward Claimed",
-                url="",
                 description="You have claimed your dailyreward of 10 coins.",
                 color=0x06a135
             )
@@ -205,7 +204,6 @@ async def daily(ctx):
         else:
             claimembed = Embed(
                 title="Dailyreward Cooldown",
-                url="",
                 description="You are still in a cooldown.",
                 color=discord.Colour.from_rgb(211, 84, 0)
             )
@@ -219,7 +217,6 @@ async def coins(ctx):
         author = ctx.author
         coinsembed = Embed(
             title="Your Coins",
-            url="",
             description="You have " + str(getUserCoins(author.id)) + " coins.",
             color=10417
         )
@@ -233,7 +230,6 @@ async def joke(ctx):
         if "joke" in x.json():
             jokeembed = Embed(
                 title="Random Joke",
-                url="",
                 description="**Joke:** " + x.json()["joke"],
                 color=discord.Colour.from_rgb(103, 230, 39)
             )
@@ -241,8 +237,34 @@ async def joke(ctx):
         if "setup" in x.json():
             jokeembed = Embed(
                 title="Random Joke",
-                url="",
                 description="**Setup:** " + x.json()["setup"] + " **Solution:** " + x.json()["delivery"],
+                color=discord.Colour.from_rgb(103, 230, 39)
+            )
+            await ctx.send(embed=jokeembed)
+
+@bot.command()
+async def food(ctx):
+    x = requests.get('https://foodish-api.herokuapp.com/api/')
+    if x.status_code == 200:
+
+        if "image" in x.json():
+            jokeembed = Embed(
+                title="Random Food",
+                description="Your daily dose of delicious food",
+                color=discord.Colour.from_rgb(103, 230, 39)
+            )
+            jokeembed.set_image(url=x.json()["image"])
+            await ctx.send(embed=jokeembed)
+
+@bot.command()
+async def number(ctx):
+    x = requests.get('http://numbersapi.com/random/math')
+    if x.status_code == 200:
+
+        if len(x.text) > 0:
+            jokeembed = Embed(
+                title="Number Facts",
+                description=x.text,
                 color=discord.Colour.from_rgb(103, 230, 39)
             )
             await ctx.send(embed=jokeembed)
