@@ -14,5 +14,5 @@ Any features you can think of can be implemented.<br>
 
 <strong>LevelSystem (&=level -> to see your current level)</strong><br>
 <strong>CoinsSystem (&=coins -> to see your current coins total)</strong><br>
-
+<strong>FunSystem (&=joke &=food &=number -> to get some random facts)</strong><br>
 Extra Feature: &=daily -> to claim your daily coins<br>
